@@ -14,8 +14,41 @@
 </template>
 
 <script>
-import axios from "axios";
+//import axios from "axios";
 import TodoItem from "./components/TodoItem.vue";
+
+const mockData = [
+  {
+    userId: 1,
+    id: 1,
+    title: "delectus aut autem",
+    completed: false
+  },
+  {
+    userId: 1,
+    id: 2,
+    title: "quis ut nam facilis et officia qui",
+    completed: false
+  },
+  {
+    userId: 1,
+    id: 3,
+    title: "fugiat veniam minus",
+    completed: false
+  },
+  {
+    userId: 1,
+    id: 4,
+    title: "et porro tempora",
+    completed: true
+  },
+  {
+    userId: 1,
+    id: 5,
+    title: "laboriosam mollitia et enim quasi adipisci quia provident illum",
+    completed: false
+  }
+];
 
 export default {
   components: { TodoItem },
@@ -27,9 +60,10 @@ export default {
   methods: {
     async fetchTodos() {
       try {
-        const res = await axios.get(
-          "https://jsonplaceholder.typicode.com/todos?_limit=5"
-        );
+        // const res = await axios.get(
+        //   mockData
+        // );
+        const res = { data: mockData };
         this.todos = res.data;
       } catch (err) {
         alert("데이터를 불러오는 데 실패했습니다.");
