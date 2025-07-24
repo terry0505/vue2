@@ -1,38 +1,52 @@
 <template>
-<div class="todo-container">
-  <h2>📝 오늘의 할 일</h2>
-  <div class="form">
-    <input v-model="newTodo" placeholder="할 일을 입력하세요" />
-    <button @click="addTodo">추가</button>
+  <div class="todo-container">
+    <h2>📝 오늘의 할 일</h2>
+    <div class="form">
+      <input v-model="newTodo" placeholder="할 일을 입력하세요" />
+      <button @click="addTodo">추가</button>
+    </div>
+    <ul class="todo-list">
+      <TodoItem
+        v-for="(todo, index) in todos"
+        :key="index"
+        :content="todo"
+        @delete="removeTodo(index)"
+      />
+    </ul>
   </div>
-  <ul class="todo-list">
-    <li v-for="(todo, i) in todos" :key="i">
-      ✅ {{ todo }}
-    </li>
-  </ul>
-</div>
 </template>
 
 <script>
+import TodoItem from "./components/TodoItem.vue";
+
 export default {
-  data(){
+  components: {
+    TodoItem
+  },
+  data() {
     return {
-     newTodo: '',
-     todos: []
-    }
+      newTodo: "",
+      todos: []
+    };
   },
   methods: {
     addTodo() {
-      if (this.newTodo.trim()) {
-        this.todos.push(this.newTodo.trim())
-        this.newTodo = ''        
+      const trimmed = this.newTodo.trim();
+      if (trimmed) {
+        this.todos.push(trimmed);
+        this.newTodo = "";
       }
+    },
+    removeTodo(index) {
+      this.todos.splice(index, 1);
     }
   }
-}
+};
 </script>
 
 <style scoped>
+@import "./assets/base.css";
+
 .todo-container {
   max-width: 400px;
   margin: 40px auto;
@@ -40,10 +54,10 @@ export default {
   border: 1px solid #ccc;
   border-radius: 12px;
   background: #f9f9f9;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.todo-container h2 {
+h2 {
   text-align: center;
   margin-bottom: 20px;
 }
@@ -54,7 +68,7 @@ export default {
   margin-bottom: 16px;
 }
 
-.form input {
+input {
   flex: 1;
   padding: 8px;
   border: 1px solid #aaa;
@@ -62,7 +76,7 @@ export default {
   font-size: 14px;
 }
 
-.form button {
+button {
   padding: 8px 16px;
   background-color: #42b983;
   color: white;
@@ -71,18 +85,12 @@ export default {
   cursor: pointer;
 }
 
-.form button:hover {
+button:hover {
   background-color: #36956d;
 }
 
 .todo-list {
   list-style: none;
   padding: 0;
-}
-
-.todo-list li {
-  padding: 6px 0;
-  font-size: 16px;
-  border-bottom: 1px dashed #ddd;
 }
 </style>
