@@ -1,54 +1,50 @@
 <template>
   <div class="todo-container">
-    <h2>📝 오늘의 할 일</h2>
-    <div class="form">
-      <input v-model="newTodo" placeholder="할 일을 입력하세요" />
-      <button @click="addTodo">추가</button>
-    </div>
+    <h2>📡 외부에서 불러온 할 일 목록</h2>
+    <button @click="fetchTodos">불러오기</button>
     <ul class="todo-list">
       <TodoItem
-        v-for="(todo, index) in todos"
-        :key="index"
-        :content="todo"
-        @delete="removeTodo(index)"
+        v-for="todo in todos"
+        :key="todo.id"
+        :content="todo.title"
+        @delete="removeTodo(todo.id)"
       />
     </ul>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 import TodoItem from "./components/TodoItem.vue";
 
 export default {
-  components: {
-    TodoItem
-  },
+  components: { TodoItem },
   data() {
     return {
-      newTodo: "",
       todos: []
     };
   },
   methods: {
-    addTodo() {
-      const trimmed = this.newTodo.trim();
-      if (trimmed) {
-        this.todos.push(trimmed);
-        this.newTodo = "";
+    async fetchTodos() {
+      try {
+        const res = await axios.get(
+          "https://jsonplaceholder.typicode.com/todos?_limit=5"
+        );
+        this.todos = res.data;
+      } catch (err) {
+        alert("데이터를 불러오는 데 실패했습니다.");
       }
     },
-    removeTodo(index) {
-      this.todos.splice(index, 1);
+    removeTodo(id) {
+      this.todos = this.todos.filter((todo) => todo.id !== id);
     }
   }
 };
 </script>
 
 <style scoped>
-@import "./assets/base.css";
-
 .todo-container {
-  max-width: 400px;
+  max-width: 480px;
   margin: 40px auto;
   padding: 24px;
   border: 1px solid #ccc;
@@ -62,35 +58,17 @@ h2 {
   margin-bottom: 20px;
 }
 
-.form {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #aaa;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
 button {
+  display: block;
+  margin: 0 auto 20px;
   padding: 8px 16px;
-  background-color: #42b983;
+  background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
-
 button:hover {
-  background-color: #36956d;
-}
-
-.todo-list {
-  list-style: none;
-  padding: 0;
+  background-color: #1976d2;
 }
 </style>
