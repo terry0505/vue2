@@ -1,76 +1,92 @@
 <template>
   <div class="todo-container">
-    <h2>📡 외부에서 불러온 할 일 목록</h2>
-    <button @click="fetchTodos">불러오기</button>
+    <h2>🧾 할 일 관리 (수정 포함)</h2>
+    <div class="form">
+      <input v-model="newTodo" placeholder="할 일을 입력하세요" />
+      <button @click="addTodo">추가</button>
+    </div>
     <ul class="todo-list">
       <TodoItem
         v-for="todo in todos"
         :key="todo.id"
         :content="todo.title"
+        :editing="editingId === todo.id"
         @delete="removeTodo(todo.id)"
+        @update="updateTodo(todo.id, $event)"
       />
     </ul>
   </div>
 </template>
 
 <script>
-//import axios from "axios";
+import axios from "axios";
 import TodoItem from "./components/TodoItem.vue";
 
-const mockData = [
-  {
-    userId: 1,
-    id: 1,
-    title: "delectus aut autem",
-    completed: false
-  },
-  {
-    userId: 1,
-    id: 2,
-    title: "quis ut nam facilis et officia qui",
-    completed: false
-  },
-  {
-    userId: 1,
-    id: 3,
-    title: "fugiat veniam minus",
-    completed: false
-  },
-  {
-    userId: 1,
-    id: 4,
-    title: "et porro tempora",
-    completed: true
-  },
-  {
-    userId: 1,
-    id: 5,
-    title: "laboriosam mollitia et enim quasi adipisci quia provident illum",
-    completed: false
-  }
-];
+const API_URL = "http://localhost:3000/todos";
 
 export default {
   components: { TodoItem },
   data() {
     return {
-      todos: []
+      newTodo: "",
+      todos: [],
+      editingId: null // 현재 수정 중인 todo의 ID
     };
+  },
+  mounted() {
+    this.fetchTodos();
   },
   methods: {
     async fetchTodos() {
       try {
-        // const res = await axios.get(
-        //   mockData
-        // );
-        const res = { data: mockData };
+        const res = await axios.get(API_URL);
         this.todos = res.data;
-      } catch (err) {
+      } catch (e) {
         alert("데이터를 불러오는 데 실패했습니다.");
       }
     },
-    removeTodo(id) {
-      this.todos = this.todos.filter((todo) => todo.id !== id);
+    async addTodo() {
+      const title = this.newTodo.trim();
+      if (!title) return;
+
+      try {
+        const res = await axios.post(API_URL, {
+          title,
+          completed: false
+        });
+        this.todos.unshift(res.data);
+        this.newTodo = "";
+      } catch (e) {
+        alert("추가 실패");
+      }
+    },
+    async removeTodo(id) {
+      try {
+        await axios.delete(`${API_URL}/${id}`);
+        this.todos = this.todos.filter((todo) => todo.id !== id);
+      } catch (e) {
+        alert("삭제 실패");
+      }
+    },
+    async updateTodo(id, newTitle) {
+      if (newTitle === null) {
+        //취소
+        this.editingId = null;
+        return;
+      }
+
+      const title = newTitle.trim();
+      if (!title) return;
+
+      try {
+        await axios.put(`${API_URL}/${id}`, { title });
+        this.todos = this.todos.map((todo) =>
+          todo.id === id ? { ...todo, title } : todo
+        );
+        this.editingId = null;
+      } catch (e) {
+        alert("삭제 실패");
+      }
     }
   }
 };
@@ -87,22 +103,35 @@ export default {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+.form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  font-size: 14px;
 }
 
 button {
-  display: block;
-  margin: 0 auto 20px;
   padding: 8px 16px;
-  background-color: #2196f3;
+  background-color: #42b983;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
 }
+
 button:hover {
-  background-color: #1976d2;
+  background-color: #36956d;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
 }
 </style>
