@@ -22,7 +22,7 @@
 import axios from "axios";
 import TodoItem from "./components/TodoItem.vue";
 
-const API_URL = "http://localhost:3000/todos";
+const API_URL = "/api/todos";
 
 export default {
   components: { TodoItem },
