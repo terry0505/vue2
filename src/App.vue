@@ -12,6 +12,7 @@
         :content="todo.title"
         :editing="editingId === todo.id"
         @delete="removeTodo(todo.id)"
+        @edit="startEdit(todo.id)"
         @update="updateTodo(todo.id, $event)"
       />
     </ul>
@@ -30,63 +31,59 @@ export default {
     return {
       newTodo: "",
       todos: [],
-      editingId: null // 현재 수정 중인 todo의 ID
+      editingId: null,
+      userId: null // userId를 상태로 관리
     };
   },
   mounted() {
+    this.userId = this.getOrCreateUserId();
     this.fetchTodos();
   },
   methods: {
-    async fetchTodos() {
-      try {
-        const res = await axios.get(API_URL);
-        this.todos = res.data;
-      } catch (e) {
-        alert("데이터를 불러오는 데 실패했습니다.");
+    getOrCreateUserId() {
+      const KEY = "todo-user-id";
+      let id = localStorage.getItem(KEY);
+      if (!id) {
+        id = "user-" + Date.now();
+        localStorage.setItem(KEY, id);
       }
+      return id;
+    },
+    async fetchTodos() {
+      const res = await axios.get(`${API_URL}?user=${this.userId}`);
+      this.todos = res.data;
     },
     async addTodo() {
       const title = this.newTodo.trim();
       if (!title) return;
-
-      try {
-        const res = await axios.post(API_URL, {
-          title,
-          completed: false
-        });
-        this.todos.unshift(res.data);
-        this.newTodo = "";
-      } catch (e) {
-        alert("추가 실패");
-      }
+      const res = await axios.post(API_URL, {
+        title,
+        completed: false,
+        userId: this.userId
+      });
+      this.todos.unshift(res.data);
+      this.newTodo = "";
     },
     async removeTodo(id) {
-      try {
-        await axios.delete(`${API_URL}/${id}`);
-        this.todos = this.todos.filter((todo) => todo.id !== id);
-      } catch (e) {
-        alert("삭제 실패");
-      }
+      await axios.delete(`${API_URL}/${id}?user=${this.userId}`);
+      this.todos = this.todos.filter((todo) => todo.id !== id);
+    },
+    startEdit(id) {
+      this.editingId = id;
     },
     async updateTodo(id, newTitle) {
       if (newTitle === null) {
-        //취소
         this.editingId = null;
         return;
       }
-
       const title = newTitle.trim();
       if (!title) return;
 
-      try {
-        await axios.put(`${API_URL}/${id}`, { title });
-        this.todos = this.todos.map((todo) =>
-          todo.id === id ? { ...todo, title } : todo
-        );
-        this.editingId = null;
-      } catch (e) {
-        alert("삭제 실패");
-      }
+      await axios.put(`${API_URL}/${id}`, { title, userId: this.userId });
+      this.todos = this.todos.map((todo) =>
+        todo.id === id ? { ...todo, title } : todo
+      );
+      this.editingId = null;
     }
   }
 };
