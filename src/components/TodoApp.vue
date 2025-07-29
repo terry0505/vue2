@@ -34,45 +34,60 @@ export default {
       newTodo: "",
       todos: [],
       editingId: null,
-      userId: null // userId를 상태로 관리
+      token: localStorage.getItem("token") // ✅ token 저장
     };
   },
   mounted() {
-    this.userId = this.getOrCreateUserId();
     this.fetchTodos();
   },
   methods: {
-    getOrCreateUserId() {
-      const KEY = "todo-user-id";
-      let id = localStorage.getItem(KEY);
-      if (!id) {
-        id = "user-" + Date.now();
-        localStorage.setItem(KEY, id);
-      }
-      return id;
+    // ✅ 공통 헤더
+    authHeader() {
+      return {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`
+        }
+      };
     },
+
     async fetchTodos() {
-      const res = await axios.get(`${API_URL}?user=${this.userId}`);
-      this.todos = res.data;
+      try {
+        const res = await axios.get(API_URL, this.authHeader());
+        this.todos = res.data;
+      } catch (err) {
+        console.error("할 일 불러오기 실패:", err);
+      }
     },
+
     async addTodo() {
       const title = this.newTodo.trim();
       if (!title) return;
-      const res = await axios.post(API_URL, {
-        title,
-        completed: false,
-        userId: this.userId
-      });
-      this.todos.unshift(res.data);
-      this.newTodo = "";
+      try {
+        const res = await axios.post(
+          API_URL,
+          { title, completed: false },
+          this.authHeader()
+        );
+        this.todos.unshift(res.data);
+        this.newTodo = "";
+      } catch (err) {
+        console.error("할 일 추가 실패:", err);
+      }
     },
+
     async removeTodo(id) {
-      await axios.delete(`${API_URL}/${id}?user=${this.userId}`);
-      this.todos = this.todos.filter((todo) => todo.id !== id);
+      try {
+        await axios.delete(`${API_URL}/${id}`, this.authHeader());
+        this.todos = this.todos.filter((todo) => todo.id !== id);
+      } catch (err) {
+        console.error("삭제 실패:", err);
+      }
     },
+
     startEdit(id) {
       this.editingId = id;
     },
+
     async updateTodo(id, newTitle) {
       if (newTitle === null) {
         this.editingId = null;
@@ -80,23 +95,33 @@ export default {
       }
       const title = newTitle.trim();
       if (!title) return;
-
-      await axios.put(`${API_URL}/${id}`, { title, userId: this.userId });
-      this.todos = this.todos.map((todo) =>
-        todo.id === id ? { ...todo, title } : todo
-      );
-      this.editingId = null;
+      try {
+        await axios.put(`${API_URL}/${id}`, { title }, this.authHeader());
+        this.todos = this.todos.map((todo) =>
+          todo.id === id ? { ...todo, title } : todo
+        );
+        this.editingId = null;
+      } catch (err) {
+        console.error("수정 실패:", err);
+      }
     },
+
     async toggleComplete(id) {
       const target = this.todos.find((todo) => todo.id === id);
+      if (!target) return;
       const updated = { ...target, completed: !target.completed };
-
-      await axios.put(`${API_URL}/${id}`, {
-        completed: updated.completed,
-        userId: this.userId
-      });
-
-      this.todos = this.todos.map((todo) => (todo.id === id ? updated : todo));
+      try {
+        await axios.put(
+          `${API_URL}/${id}`,
+          { completed: updated.completed },
+          this.authHeader()
+        );
+        this.todos = this.todos.map((todo) =>
+          todo.id === id ? updated : todo
+        );
+      } catch (err) {
+        console.error("체크 상태 변경 실패:", err);
+      }
     }
   }
 };
