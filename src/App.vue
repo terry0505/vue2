@@ -10,10 +10,12 @@
         v-for="todo in todos"
         :key="todo.id"
         :content="todo.title"
+        :completed="todo.completed"
         :editing="editingId === todo.id"
         @delete="removeTodo(todo.id)"
         @edit="startEdit(todo.id)"
         @update="updateTodo(todo.id, $event)"
+        @toggle="toggleComplete(todo.id)"
       />
     </ul>
   </div>
@@ -84,6 +86,17 @@ export default {
         todo.id === id ? { ...todo, title } : todo
       );
       this.editingId = null;
+    },
+    async toggleComplete(id) {
+      const target = this.todos.find((todo) => todo.id === id);
+      const updated = { ...target, completed: !target.completed };
+
+      await axios.put(`${API_URL}/${id}`, {
+        completed: updated.completed,
+        userId: this.userId
+      });
+
+      this.todos = this.todos.map((todo) => (todo.id === id ? updated : todo));
     }
   }
 };
