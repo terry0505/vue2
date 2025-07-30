@@ -18,34 +18,35 @@
 </template>
 
 <script>
+import { store, mutations } from './store';
+
 export default {
   data() {
     return {
-      isDark: false,
-      isLoggedIn: !!localStorage.getItem("token")
+      isLoggedIn: !!localStorage.getItem('token'),
     };
   },
-  created() {
-    const saved = localStorage.getItem("theme");
-    this.isDark = saved === "dark";
+  computed: {
+    isDark() {
+      return store.isDark;
+    },
   },
   methods: {
     toggleDark() {
-      this.isDark = !this.isDark;
-      localStorage.setItem("theme", this.isDark ? "dark" : "light");
+      mutations.toggleTheme();
     },
     logout() {
-      localStorage.removeItem("token");
+      localStorage.removeItem('token');
       this.isLoggedIn = false;
-      this.$router.push("/login");
-    }
+      this.$router.push('/login');
+    },
   },
   watch: {
     // 로그인 성공 시에도 갱신될 수 있도록 localStorage 감시
     $route() {
-      this.isLoggedIn = !!localStorage.getItem("token");
-    }
-  }
+      this.isLoggedIn = !!localStorage.getItem('token');
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
