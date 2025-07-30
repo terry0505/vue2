@@ -18,22 +18,22 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import { mapState, mapMutations } from "vuex";
 
 export default {
   computed: {
-    ...mapState(['isDark', 'isLoggedIn']),
+    ...mapState(["isDark", "isLoggedIn"])
   },
   created() {
     this.syncLoginState(); // 새로고침 시 로그인 상태 복원
   },
   methods: {
-    ...mapMutations(['toggleDark', 'logout', 'syncLoginState']),
+    ...mapMutations(["toggleDark", "logout", "syncLoginState"]),
     handleLogout() {
       this.logout();
-      this.$router.push('/login');
-    },
-  },
+      this.$router.push("/login");
+    }
+  }
 };
 </script>
 <style lang="scss" scoped>

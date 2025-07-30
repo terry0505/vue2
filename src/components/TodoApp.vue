@@ -22,19 +22,19 @@
 </template>
 
 <script>
-import axios from 'axios';
-import TodoItem from './TodoItem.vue';
+import axios from "axios";
+import TodoItem from "./TodoItem.vue";
 
-const API_URL = '/api/todos';
+const API_URL = "/api/todos";
 
 export default {
   components: { TodoItem },
   data() {
     return {
-      newTodo: '',
+      newTodo: "",
       todos: [],
       editingId: null,
-      token: localStorage.getItem('token'), // ✅ token 저장
+      token: localStorage.getItem("token") // ✅ token 저장
     };
   },
   mounted() {
@@ -45,8 +45,8 @@ export default {
     authHeader() {
       return {
         headers: {
-          Authorization: `Bearer ${this.token}`,
-        },
+          Authorization: `Bearer ${this.token}`
+        }
       };
     },
 
@@ -55,7 +55,7 @@ export default {
         const res = await axios.get(API_URL, this.authHeader());
         this.todos = res.data;
       } catch (err) {
-        console.error('할 일 불러오기 실패:', err);
+        console.error("할 일 불러오기 실패:", err);
       }
     },
 
@@ -69,9 +69,9 @@ export default {
           this.authHeader()
         );
         this.todos.unshift(res.data);
-        this.newTodo = '';
+        this.newTodo = "";
       } catch (err) {
-        console.error('할 일 추가 실패:', err);
+        console.error("할 일 추가 실패:", err);
       }
     },
 
@@ -80,7 +80,7 @@ export default {
         await axios.delete(`${API_URL}/${id}`, this.authHeader());
         this.todos = this.todos.filter((todo) => todo.id !== id);
       } catch (err) {
-        console.error('삭제 실패:', err);
+        console.error("삭제 실패:", err);
       }
     },
 
@@ -102,7 +102,7 @@ export default {
         );
         this.editingId = null;
       } catch (err) {
-        console.error('수정 실패:', err);
+        console.error("수정 실패:", err);
       }
     },
 
@@ -120,10 +120,10 @@ export default {
           todo.id === id ? updated : todo
         );
       } catch (err) {
-        console.error('체크 상태 변경 실패:', err);
+        console.error("체크 상태 변경 실패:", err);
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
