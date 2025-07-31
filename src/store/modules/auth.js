@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "@/utils/axios";
 import { isTokenExpired } from "@/utils/jwt";
 
 const state = {
@@ -53,6 +53,22 @@ const actions = {
       return {
         success: false,
         message: error.response?.data?.message || "로그인 실패"
+      };
+    }
+  },
+  async Register({ dispatch }, { username, password }) {
+    try {
+      await axios.post("/api/auth/register", {
+        username,
+        password
+      });
+
+      //회원가입 성공 => 자동 로그인 실행
+      return await dispatch("login", { username, password });
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "회원가입 실패"
       };
     }
   }

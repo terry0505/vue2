@@ -11,8 +11,6 @@
 </template>
 
 <script>
-import axios from "axios";
-
 export default {
   name: "RegisterPage",
   data() {
@@ -20,15 +18,16 @@ export default {
   },
   methods: {
     async handleRegister() {
-      try {
-        await axios.post("/api/auth/register", {
-          username: this.username,
-          password: this.password
-        });
+      const result = await this.$store.dispatch("auth/register", {
+        username: this.username,
+        password: this.password
+      });
+
+      if (result.success) {
         alert("회원가입 완료! 로그인 해주세요.");
         this.$router.push("/login");
-      } catch (e) {
-        alert("회원가입 실패");
+      } else {
+        alert(result.message);
       }
     }
   }
