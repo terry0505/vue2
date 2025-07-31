@@ -1,119 +1,71 @@
 <template>
   <div class="todo-container">
-    <h2>🧾 할 일 관리 (수정 포함)</h2>
+    <h2>🧾 할 일 관리 (Vuex)</h2>
     <div class="form">
       <input v-model="newTodo" placeholder="할 일을 입력하세요" />
-      <button @click="addTodo">추가</button>
+      <button @click="handleAdd">추가</button>
     </div>
     <ul class="todo-list">
       <TodoItem
-        v-for="todo in todos"
+        v-for="todo in allTodos"
         :key="todo.id"
         :content="todo.title"
         :completed="todo.completed"
         :editing="editingId === todo.id"
-        @delete="removeTodo(todo.id)"
+        @delete="handleDelete(todo.id)"
         @edit="startEdit(todo.id)"
-        @update="updateTodo(todo.id, $event)"
-        @toggle="toggleComplete(todo.id)"
+        @update="handleUpdate(todo.id, $event)"
+        @toggle="handleToggle(todo.id)"
       />
     </ul>
   </div>
 </template>
 
 <script>
-import axios from "@/utils/axios";
+import { mapGetters, mapActions } from "vuex";
 import TodoItem from "./TodoItem.vue";
-
-const API_URL = "/api/todos";
 
 export default {
   components: { TodoItem },
   data() {
     return {
       newTodo: "",
-      todos: [],
-      editingId: null,
-      token: localStorage.getItem("token") // ✅ token 저장
+      editingId: null
     };
+  },
+  computed: {
+    ...mapGetters("todo", ["allTodos"])
   },
   mounted() {
     this.fetchTodos();
   },
   methods: {
-    // ✅ 공통 헤더
-    authHeader() {
-      return {
-        headers: {
-          Authorization: `Bearer ${this.token}`
-        }
-      };
+    ...mapActions("todo", [
+      "fetchTodos",
+      "addTodo",
+      "deleteTodo",
+      "updateTodo",
+      "toggleTodo"
+    ]),
+    async handleAdd() {
+      if (!this.newTodo.trim()) return;
+      await this.addTodo(this.newTodo);
+      this.newTodo = "";
     },
-
-    async fetchTodos() {
-      try {
-        const res = await axios.get(API_URL);
-        this.todos = res.data;
-      } catch (err) {
-        console.error("할 일 불러오기 실패:", err);
-      }
+    async handleDelete(id) {
+      await this.deleteTodo(id);
     },
-
-    async addTodo() {
-      const title = this.newTodo.trim();
-      if (!title) return;
-      try {
-        const res = await axios.post(API_URL, { title, completed: false });
-        this.todos.unshift(res.data);
-        this.newTodo = "";
-      } catch (err) {
-        console.error("할 일 추가 실패:", err);
-      }
-    },
-
-    async removeTodo(id) {
-      try {
-        await axios.delete(`${API_URL}/${id}`);
-        this.todos = this.todos.filter((todo) => todo.id !== id);
-      } catch (err) {
-        console.error("삭제 실패:", err);
-      }
-    },
-
     startEdit(id) {
       this.editingId = id;
     },
-
-    async updateTodo(id, newTitle) {
-      if (newTitle === null) {
-        this.editingId = null;
-        return;
+    async handleUpdate(id, newTitle) {
+      if (newTitle !== null && newTitle.trim()) {
+        await this.updateTodo({ id, title: newTitle });
       }
-      const title = newTitle.trim();
-      if (!title) return;
-      try {
-        await axios.put(`${API_URL}/${id}`, { title });
-        this.todos = this.todos.map((todo) =>
-          todo.id === id ? { ...todo, title } : todo
-        );
-        this.editingId = null;
-      } catch (err) {
-        console.error("수정 실패:", err);
-      }
+      this.editingId = null;
     },
-
-    async toggleComplete(id) {
-      const target = this.todos.find((todo) => todo.id === id);
-      if (!target) return;
-      const updated = { ...target, completed: !target.completed };
-      try {
-        await axios.put(`${API_URL}/${id}`, { completed: updated.completed });
-        this.todos = this.todos.map((todo) =>
-          todo.id === id ? updated : todo
-        );
-      } catch (err) {
-        console.error("체크 상태 변경 실패:", err);
-      }
+    async handleToggle(id) {
+      await this.toggleTodo(id);
     }
   }
 };
