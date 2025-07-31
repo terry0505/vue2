@@ -20,19 +20,26 @@ const routes = [
 
 const router = new VueRouter({ mode: "history", routes });
 
-// ✅ 인증 여부 체크
 router.beforeEach((to, from, next) => {
-  store.commit("syncLoginState"); // ✅ 이동 전마다 로그인 상태 동기화
+  store.commit("auth/syncLoginState");
 
-  if (to.matched.some((record) => record.meta.requiresAuth)) {
-    if (!store.state.isLoggedIn) {
-      alert("세션이 만료되었거나 로그인되지 않았습니다.");
+  const isAuthRequired = to.matched.some((record) => record.meta.requiresAuth);
+  const isLoggedIn = store.state.auth.isLoggedIn;
+
+  if (isAuthRequired && !isLoggedIn) {
+    if (to.path !== "/login") {
       next("/login");
     } else {
       next();
     }
+  } else if ((to.path === "/login" || to.path === "/register") && isLoggedIn) {
+    if (from.path !== "/todos") {
+      next("/todos");
+    } else {
+      next(false); // 현재 페이지에서 stay
+    }
   } else {
-    next();
+    next(); // 정상 라우팅
   }
 });
 

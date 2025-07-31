@@ -25,13 +25,15 @@ import { mapState, mapMutations } from "vuex";
 
 export default {
   computed: {
-    ...mapState(["isDark", "isLoggedIn", "username"])
+    ...mapState("auth", ["isLoggedIn", "username"]),
+    ...mapState("theme", ["isDark"])
   },
   created() {
-    this.syncLoginState(); // 새로고침 시 로그인 상태 복원
+    this.syncLoginState();
   },
   methods: {
-    ...mapMutations(["toggleDark", "logout", "syncLoginState"]),
+    ...mapMutations("auth", ["logout", "syncLoginState"]),
+    ...mapMutations("theme", ["toggleDark"]),
     handleLogout() {
       this.logout();
       this.$router.push("/login");

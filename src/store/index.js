@@ -1,14 +1,20 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import { isTokenExpired } from "../utils/jwt";
+import auth from "./modules/auth";
+import theme from "./modules/theme";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  modules: {
+    auth,
+    theme
+  },
   state: {
     isDark: localStorage.getItem("theme") === "dark",
     isLoggedIn: false,
-    username: localStorage.getItem('username') || '', //사용자 이름 저장
+    username: localStorage.getItem("username") || "" //사용자 이름 저장
   },
   mutations: {
     toggleDark(state) {
@@ -21,13 +27,13 @@ export default new Vuex.Store({
     },
     setUsername(state, name) {
       state.username = name;
-      localStorage.setItem('username', name);
+      localStorage.setItem("username", name);
     },
     logout(state) {
       localStorage.removeItem("token");
       localStorage.removeItem("username");
       state.isLoggedIn = false;
-      state.username = '';
+      state.username = "";
     },
     syncLoginState(state) {
       const token = localStorage.getItem("token");

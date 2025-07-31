@@ -30,8 +30,8 @@ export default {
 
         //사용자명은 그대로 저장 가능
         //localStorage.setItem("username", res.data.username);
-
-        this.$store.commit('setUsername', res.data.username);
+        //this.$store.commit('setUsername', res.data.username);
+        this.$store.commit("auth/setUsername", res.data.username);
 
         this.$router.push("/todos");
       } catch (e) {
