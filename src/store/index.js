@@ -7,7 +7,8 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     isDark: localStorage.getItem("theme") === "dark",
-    isLoggedIn: false
+    isLoggedIn: false,
+    username: localStorage.getItem('username') || '', //사용자 이름 저장
   },
   mutations: {
     toggleDark(state) {
@@ -18,17 +19,27 @@ export default new Vuex.Store({
       localStorage.setItem("token", token);
       state.isLoggedIn = true;
     },
+    setUsername(state, name) {
+      state.username = name;
+      localStorage.setItem('username', name);
+    },
     logout(state) {
       localStorage.removeItem("token");
+      localStorage.removeItem("username");
       state.isLoggedIn = false;
+      state.username = '';
     },
     syncLoginState(state) {
       const token = localStorage.getItem("token");
+      const name = localStorage.getItem("username");
       if (!token || isTokenExpired(token)) {
         localStorage.removeItem("token");
+        localStorage.removeItem("username");
         state.isLoggedIn = false;
+        state.username = "";
       } else {
         state.isLoggedIn = true;
+        state.username = name || "";
       }
     }
   }

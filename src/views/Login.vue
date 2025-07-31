@@ -29,7 +29,9 @@ export default {
         this.$store.commit("login", res.data.token);
 
         //사용자명은 그대로 저장 가능
-        localStorage.setItem("username", res.data.username);
+        //localStorage.setItem("username", res.data.username);
+
+        this.$store.commit('setUsername', res.data.username);
 
         this.$router.push("/todos");
       } catch (e) {

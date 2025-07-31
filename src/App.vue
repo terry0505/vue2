@@ -3,10 +3,13 @@
     <header class="nav-bar">
       <div class="left">
         <router-link to="/todos">할 일</router-link>
-        <router-link to="/login">로그인</router-link>
+        <router-link v-if="!isLoggedIn" to="/login">로그인</router-link>
         <router-link to="/register">회원가입</router-link>
       </div>
       <div class="right">
+        <div v-if="isLoggedIn" class="user-info">
+          👤 {{ username }} 님 환영합니다.
+        </div>
         <button class="theme-toggle" @click="toggleDark">
           {{ isDark ? "☀️ 밝은모드" : "🌙 다크모드" }}
         </button>
@@ -22,7 +25,7 @@ import { mapState, mapMutations } from "vuex";
 
 export default {
   computed: {
-    ...mapState(["isDark", "isLoggedIn"])
+    ...mapState(["isDark", "isLoggedIn", "username"])
   },
   created() {
     this.syncLoginState(); // 새로고침 시 로그인 상태 복원
@@ -67,13 +70,17 @@ export default {
     color: #333;
   }
 
-  .right button {
-    margin-left: 8px;
-    padding: 6px 12px;
-    border-radius: 4px;
-    border: 1px solid #aaa;
-    cursor: pointer;
-    background: none;
+  .right {
+    display: flex;
+    align-items: center;
+    button {
+      margin-left: 8px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      border: 1px solid #aaa;
+      cursor: pointer;
+      background: none;
+    }
   }
 }
 
