@@ -1,3 +1,4 @@
+import axios from "axios";
 import { isTokenExpired } from "@/utils/jwt";
 
 const state = {
@@ -6,13 +7,13 @@ const state = {
 };
 
 const mutations = {
-  login(state, token) {
+  setToken(state, token) {
     localStorage.setItem("token", token);
     state.isLoggedIn = true;
   },
   setUsername(state, name) {
-    state.username = name;
     localStorage.setItem("username", name);
+    state.username = name;
   },
   logout(state) {
     localStorage.removeItem("token");
@@ -23,6 +24,7 @@ const mutations = {
   syncLoginState(state) {
     const token = localStorage.getItem("token");
     const name = localStorage.getItem("username");
+
     if (!token || isTokenExpired(token)) {
       localStorage.removeItem("token");
       localStorage.removeItem("username");
@@ -35,8 +37,30 @@ const mutations = {
   }
 };
 
+const actions = {
+  async login({ commit }, { username, password }) {
+    try {
+      const res = await axios.post("/api/auth/login", {
+        username,
+        password
+      });
+
+      commit("setToken", res.data.token);
+      commit("setUsername", res.data.username);
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "로그인 실패"
+      };
+    }
+  }
+};
+
 export default {
   namespaced: true,
   state,
-  mutations
+  mutations,
+  actions
 };
